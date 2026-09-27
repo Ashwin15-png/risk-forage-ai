@@ -4,8 +4,8 @@ from datetime import datetime, timezone
 from typing import Optional
 from app.database import get_db
 from app.models.entities import User, Organization
-from app.schemas.schemas import LoginRequest, TokenResponse, UserResponse
-from app.utils.auth import verify_password, create_access_token
+from app.schemas.schemas import LoginRequest, TokenResponse, UserResponse, UserProfileUpdate
+from app.utils.auth import verify_password, create_access_token, decode_access_token
 from app.utils.firebase_auth import verify_firebase_token
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -35,22 +35,89 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
             "email": user.email,
             "full_name": user.full_name,
             "role": user.role,
-            "org_id": user.org_id
+            "org_id": user.org_id,
+            "photo_url": getattr(user, "photo_url", None),
+            "provider": getattr(user, "provider", "password")
         }
     }
 
 @router.get("/me", response_model=UserResponse)
-def get_current_user(db: Session = Depends(get_db)):
-    # Return default CISO user for frictionless evaluation
-    user = db.query(User).filter_by(role="ciso").first()
+def get_current_user(
+    authorization: Optional[str] = Header(None),
+    db: Session = Depends(get_db)
+):
+    user = None
+    if authorization and authorization.startswith("Bearer "):
+        token = authorization.replace("Bearer ", "", 1).strip()
+        decoded = decode_access_token(token)
+        if decoded and "sub" in decoded:
+            user = db.query(User).filter(User.id == decoded["sub"]).first()
+        if not user:
+            # Check if it is a Firebase token
+            fb_decoded = verify_firebase_token(token)
+            if fb_decoded and "uid" in fb_decoded:
+                user = db.query(User).filter(User.firebase_uid == fb_decoded["uid"]).first()
+
+    if not user:
+        # Fallback to CISO user
+        user = db.query(User).filter_by(role="ciso").first()
     if not user:
         user = db.query(User).first()
+
     return {
         "id": user.id,
         "email": user.email,
         "full_name": user.full_name,
         "role": user.role,
-        "org_id": user.org_id
+        "org_id": user.org_id,
+        "photo_url": getattr(user, "photo_url", None),
+        "provider": getattr(user, "provider", "password")
+    }
+
+@router.patch("/profile", response_model=UserResponse)
+def update_user_profile(
+    update_data: UserProfileUpdate,
+    authorization: Optional[str] = Header(None),
+    db: Session = Depends(get_db)
+):
+    """Update profile details (name, role, avatar) and persist to database."""
+    user = None
+    if authorization and authorization.startswith("Bearer "):
+        token = authorization.replace("Bearer ", "", 1).strip()
+        decoded = decode_access_token(token)
+        if decoded and "sub" in decoded:
+            user = db.query(User).filter(User.id == decoded["sub"]).first()
+        if not user:
+            fb_decoded = verify_firebase_token(token)
+            if fb_decoded and "uid" in fb_decoded:
+                user = db.query(User).filter(User.firebase_uid == fb_decoded["uid"]).first()
+
+    if not user:
+        user = db.query(User).filter_by(role="ciso").first()
+    if not user:
+        user = db.query(User).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if update_data.full_name is not None and update_data.full_name.strip():
+        user.full_name = update_data.full_name.strip()
+    if update_data.role is not None and update_data.role.strip():
+        user.role = update_data.role.strip()
+    if update_data.photo_url is not None:
+        user.photo_url = update_data.photo_url.strip()
+
+    db.commit()
+    db.refresh(user)
+
+    return {
+        "id": user.id,
+        "email": user.email,
+        "full_name": user.full_name,
+        "role": user.role,
+        "org_id": user.org_id,
+        "photo_url": getattr(user, "photo_url", None),
+        "provider": getattr(user, "provider", "password")
     }
 
 

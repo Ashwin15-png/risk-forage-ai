@@ -332,7 +332,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, onOpenDemo }) => {
                   </div>
                 </div>
               </div>
-              <div className="p-2">
+              <div className="p-2 space-y-1">
+                <button
+                  onClick={() => {
+                    setUserMenuOpen(false);
+                    navigate('/settings');
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-cyber-text hover:bg-cyber-surface/60 transition-colors"
+                >
+                  <User className="w-4 h-4 text-cyber-bright" />
+                  Profile &amp; Settings
+                </button>
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-rose-400 hover:bg-rose-500/10 transition-colors"

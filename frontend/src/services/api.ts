@@ -76,6 +76,8 @@ export const authApi = {
   syncFirebase: (idToken: string) => api.post('/auth/sync', {}, {
     headers: { Authorization: `Bearer ${idToken}` }
   }),
+  updateProfile: (data: { full_name?: string; role?: string; photo_url?: string }) =>
+    api.patch('/auth/profile', data),
 };
 
 export const riskApi = {

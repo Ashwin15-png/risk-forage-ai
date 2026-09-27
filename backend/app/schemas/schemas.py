@@ -13,6 +13,13 @@ class UserResponse(BaseModel):
     full_name: str
     role: str
     org_id: str
+    photo_url: Optional[str] = None
+    provider: Optional[str] = "password"
+
+class UserProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    role: Optional[str] = None
+    photo_url: Optional[str] = None
 
 class TokenResponse(BaseModel):
     access_token: str

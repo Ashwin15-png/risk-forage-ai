@@ -28,6 +28,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   getIdToken: () => Promise<string | null>;
+  updateProfile: (data: { full_name?: string; role?: string; photo_url?: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -115,7 +116,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (firebaseUser) {
       return firebaseUser.getIdToken();
     }
-    return null;
+    return localStorage.getItem('token');
+  };
+
+  const updateProfile = async (data: { full_name?: string; role?: string; photo_url?: string }) => {
+    try {
+      const res = await authApi.updateProfile(data);
+      const updatedUser = res.data;
+      setAppUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    } catch (err: any) {
+      console.error('[AuthContext] Update profile error:', err);
+      // Fallback local update
+      setAppUser((prev) => {
+        if (!prev) return null;
+        const updated = {
+          ...prev,
+          full_name: data.full_name ?? prev.full_name,
+          display_name: data.full_name ?? prev.display_name,
+          role: data.role ?? prev.role,
+          photo_url: data.photo_url ?? prev.photo_url,
+        };
+        localStorage.setItem('user', JSON.stringify(updated));
+        return updated;
+      });
+    }
   };
 
   return (
@@ -128,6 +153,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signInWithGoogle,
         logout,
         getIdToken,
+        updateProfile,
       }}
     >
       {children}
