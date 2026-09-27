@@ -1,0 +1,26 @@
+asset_id_code,name,asset_type,ip_address,hostname,exposure,criticality,business_service_id,business_service,owner,data_classification,control_coverage,status,environment
+A001,payment-api-prod-01,API Gateway,104.22.45.12,gw01.payments.demofinancial.com,Internet-Facing,Critical,SVC001,Payment Gateway,Payments SecOps,Restricted,72.0,Active,Production
+A002,payment-db-prod-01,Database,10.200.12.80,paydb-primary.rds.internal,Internal,Critical,SVC001,Payment Gateway,Database Operations,Restricted,88.0,Active,Production
+A003,payment-token-srv-01,Server,10.200.12.15,token01.payments.internal,Internal,Critical,SVC001,Payment Gateway,Card Security Lead,Restricted,85.0,Active,Production
+A004,payment-hsm-vault-01,Server,10.200.12.5,hsm01.secure.demofinancial.com,Internal,Critical,SVC001,Payment Gateway,Cryptographic Ops,Restricted,95.0,Active,Production
+A005,internet-banking-web-01,Server,104.18.23.88,retail01.demofinancial.com,Internet-Facing,High,SVC002,Customer Internet Banking,Digital Web Platform,Confidential,76.0,Active,Production
+A006,internet-banking-app-01,Server,10.150.4.11,app01.ibank.internal,DMZ,High,SVC002,Customer Internet Banking,Digital Web Platform,Restricted,80.0,Active,Production
+A007,internet-banking-db-01,Database,10.150.4.99,ibank-ro.rds.internal,Internal,High,SVC002,Customer Internet Banking,Database Operations,Restricted,84.0,Active,Production
+A008,mobile-api-prod-01,API Gateway,172.67.182.44,api.mobile.demofinancial.com,Internet-Facing,Critical,SVC003,Mobile Banking API,Mobile Engineering,Restricted,74.0,Active,Production
+A009,mobile-auth-srv-01,Server,10.150.8.20,oauth.mobile.internal,DMZ,High,SVC003,Mobile Banking API,IAM Team,Confidential,82.0,Active,Production
+A010,mobile-cache-prod-01,Database,10.150.8.50,redis.mobile.internal,Internal,Medium,SVC003,Mobile Banking API,Mobile Engineering,Confidential,78.0,Active,Production
+A011,core-banking-ledger-01,Server,10.100.1.10,cbs-app01.core.internal,Internal,Critical,SVC004,Core Banking Ledger,Core Platform Team,Restricted,90.0,Active,Production
+A012,core-banking-db-cluster,Database,10.100.1.50,exadata01.core.internal,Internal,Critical,SVC004,Core Banking Ledger,Database Operations,Restricted,92.0,Active,Production
+A013,core-banking-eod-worker,Server,10.100.1.30,eod-worker.core.internal,Internal,High,SVC004,Core Banking Ledger,Core Platform Team,Restricted,85.0,Active,Production
+A014,identity-api-prod-01,Server,10.50.10.11,dc01.corp.demofinancial.com,Internal,Critical,SVC005,Customer Identity Service,Enterprise IAM,Restricted,88.0,Active,Production
+A015,customer-sso-gateway-01,API Gateway,104.22.60.18,sso.demofinancial.com,Internet-Facing,High,SVC005,Customer Identity Service,Enterprise IAM,Confidential,80.0,Active,Production
+A016,bastion-host-01,Server,52.77.19.102,bastion.ops.demofinancial.com,DMZ,High,SVC005,Customer Identity Service,Cloud SecOps,Restricted,86.0,Active,Production
+A017,loan-processing-api-01,Server,104.22.88.90,loans.demofinancial.com,Internet-Facing,High,SVC006,Loan Processing Platform,Lending SecOps,Confidential,70.0,Active,Production
+A018,loan-underwriting-srv-01,Server,10.140.2.14,score.loans.internal,Internal,High,SVC006,Loan Processing Platform,Risk Analytics Team,Restricted,82.0,Active,Production
+A019,fraud-engine-01,Server,10.180.10.25,fraud-stream.internal,Internal,High,SVC007,Fraud Detection Platform,Fraud SecOps,Restricted,86.0,Active,Production
+A020,fraud-scoring-redis-01,Database,10.180.10.60,fraud-cache.internal,Internal,Medium,SVC007,Fraud Detection Platform,Fraud SecOps,Confidential,80.0,Active,Production
+A021,employee-portal-web-01,Server,10.70.1.100,sap-core.erp.internal,Internal,Medium,SVC008,Internal Employee Portal,Corporate IT,Internal,68.0,Active,Production
+A022,employee-vpn-01,Server,52.220.14.88,vpn.demofinancial.com,Internet-Facing,High,SVC008,Internal Employee Portal,Network Operations,Confidential,75.0,Active,Production
+A023,customer-db-prod-01,Database,52.95.120.4,analytics-lake.internal,Internal,High,SVC009,Cloud Data Analytics Lake,Data Lake Team,Confidential,82.0,Active,Production
+A024,partner-b2b-sftp-01,Server,13.232.40.19,sftp.partner.demofinancial.com,Internet-Facing,High,SVC010,Partner B2B Integration Hub,B2B Operations,Confidential,72.0,Active,Production
+A025,partner-webhook-gw-01,API Gateway,13.232.40.25,hooks.partner.demofinancial.com,Internet-Facing,Medium,SVC010,Partner B2B Integration Hub,B2B Operations,Internal,70.0,Active,Production
