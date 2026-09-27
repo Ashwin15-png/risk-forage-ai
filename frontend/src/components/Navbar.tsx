@@ -7,6 +7,7 @@ import {
 import { socketService, ConnectionStatus } from '../services/socket';
 import { useDataMode } from '../context/DataModeContext';
 import { useAuth } from '../context/AuthContext';
+import { healthApi } from '../services/api';
 import { DataMode } from '../types';
 
 interface NavbarProps {
@@ -22,6 +23,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, onOpenDemo }) => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [wsStatus, setWsStatus] = useState<ConnectionStatus>(socketService.getStatus());
+  const [httpStatus, setHttpStatus] = useState<'ONLINE' | 'CONNECTING' | 'OFFLINE'>('CONNECTING');
   
   const [notifications, setNotifications] = useState<any[]>([
     {
@@ -47,8 +49,21 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, onOpenDemo }) => {
     }
   ]);
 
-  // Track real live WebSocket status & messages
+  // Track real backend HTTP health & WebSocket status
   useEffect(() => {
+    let isMounted = true;
+    const checkHealth = async () => {
+      try {
+        await healthApi.check();
+        if (isMounted) setHttpStatus('ONLINE');
+      } catch (e) {
+        if (isMounted) setHttpStatus('OFFLINE');
+      }
+    };
+
+    checkHealth();
+    const healthInterval = setInterval(checkHealth, 30000);
+
     const unsubStatus = socketService.onStatusChange((status) => {
       setWsStatus(status);
     });
@@ -70,6 +85,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, onOpenDemo }) => {
     });
 
     return () => {
+      isMounted = false;
+      clearInterval(healthInterval);
       unsubStatus();
       unsubEvents();
     };
@@ -139,24 +156,35 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, onOpenDemo }) => {
           })}
         </div>
 
-        {/* Real Live WebSocket Connection Status Indicator */}
+        {/* Real Backend HTTP & Live WebSocket Connection Status Indicator */}
         <div className="hidden xl:flex items-center gap-2 text-xs">
+          {httpStatus === 'ONLINE' ? (
+            <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-mono text-[11px] bg-emerald-950/80 text-emerald-400 border border-emerald-500/30" title="Backend HTTP API Operational">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              ONLINE
+            </span>
+          ) : httpStatus === 'CONNECTING' ? (
+            <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-mono text-[11px] bg-cyan-950/80 text-cyan-400 border border-cyan-500/30" title="Connecting to Backend API">
+              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+              CONNECTING
+            </span>
+          ) : (
+            <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-mono text-[11px] bg-rose-950/80 text-rose-400 border border-rose-500/30" title="Backend HTTP API Offline">
+              <span className="w-2 h-2 rounded-full bg-rose-500" />
+              OFFLINE
+            </span>
+          )}
+
           {wsStatus === 'LIVE' && (
-            <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-mono text-[11px] bg-emerald-950/80 text-emerald-400 border border-emerald-500/30">
+            <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-mono text-[11px] bg-emerald-950/80 text-emerald-400 border border-emerald-500/30" title="Live WebSocket Feed Connected">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               ● LIVE
             </span>
           )}
           {wsStatus === 'RECONNECTING' && (
-            <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-mono text-[11px] bg-amber-950/80 text-amber-400 border border-amber-500/30">
+            <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-mono text-[11px] bg-amber-950/80 text-amber-400 border border-amber-500/30" title="Reconnecting WebSocket Feed">
               <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
               ○ RECONNECTING
-            </span>
-          )}
-          {wsStatus === 'OFFLINE' && (
-            <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-mono text-[11px] bg-rose-950/80 text-rose-400 border border-rose-500/30">
-              <span className="w-2 h-2 rounded-full bg-rose-500" />
-              × OFFLINE
             </span>
           )}
           <span className="text-cyber-subtext text-[11px] font-mono">Updated: {lastUpdated}</span>

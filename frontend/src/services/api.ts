@@ -189,4 +189,12 @@ export const demoApi = {
   resetBaseline: () => api.post('/demo/reset-baseline'),
 };
 
+export const healthApi = {
+  check: () => {
+    const healthUrl = normalizedBase ? `${normalizedBase}/health` : '/health';
+    return axios.get(healthUrl);
+  },
+};
+
 export default api;
+
