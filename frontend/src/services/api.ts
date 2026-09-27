@@ -1,7 +1,12 @@
 import axios from 'axios';
 
+// Resolve backend base URL without trailing slashes
+const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+const normalizedBase = rawBaseUrl.replace(/\/+$/, '');
+export const BASE_API_URL = normalizedBase ? (normalizedBase.endsWith('/api/v1') ? normalizedBase : `${normalizedBase}/api/v1`) : '/api/v1';
+
 const api = axios.create({
-  baseURL: '/api/v1',
+  baseURL: BASE_API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -35,7 +40,7 @@ api.interceptors.response.use(
       if (!_autoLoginPromise) {
         _autoLoginPromise = (async () => {
           try {
-            const loginRes = await axios.post('/api/v1/auth/login', {
+            const loginRes = await api.post('/auth/login', {
               email: 'ciso@demofinancial.com',
               password: 'DemoPassword2026!',
             });
@@ -68,6 +73,9 @@ api.interceptors.response.use(
 export const authApi = {
   login: (data: { email: string; password: string }) => api.post('/auth/login', data),
   me: () => api.get('/auth/me'),
+  syncFirebase: (idToken: string) => api.post('/auth/sync', {}, {
+    headers: { Authorization: `Bearer ${idToken}` }
+  }),
 };
 
 export const riskApi = {
@@ -141,8 +149,8 @@ export const complianceApi = {
 
 export const reportApi = {
   preview: (reportType?: string) => api.get('/reports/preview', { params: { report_type: reportType } }),
-  downloadPdfUrl: '/api/v1/reports/download-pdf',
-  exportCsvUrl: '/api/v1/reports/export-csv',
+  downloadPdfUrl: `${BASE_API_URL}/reports/download-pdf`,
+  exportCsvUrl: `${BASE_API_URL}/reports/export-csv`,
 };
 
 export const modelApi = {

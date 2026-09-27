@@ -18,8 +18,9 @@ class Settings(BaseSettings):
     # Environment & CORS
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     API_BASE_URL: str = os.getenv("API_BASE_URL", "http://localhost:8000")
-    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "https://risk-forage-ai.vercel.app")
     CORS_ORIGINS: List[str] = [
+        "https://risk-forage-ai.vercel.app",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:3000",

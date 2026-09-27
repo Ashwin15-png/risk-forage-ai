@@ -6,7 +6,7 @@ import {
   onAuthStateChanged,
 } from 'firebase/auth';
 import { auth, googleProvider } from '../services/firebase';
-import axios from 'axios';
+import { authApi } from '../services/api';
 
 export interface AppUser {
   id: string;
@@ -42,16 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const syncUserWithBackend = useCallback(async (user: FirebaseUser) => {
     try {
       const idToken = await user.getIdToken();
-      const res = await axios.post(
-        '/api/v1/auth/sync',
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      const res = await authApi.syncFirebase(idToken);
       const syncedUser = res.data;
       setAppUser(syncedUser);
       // Store token for API interceptor compatibility

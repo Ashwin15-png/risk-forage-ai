@@ -7,13 +7,13 @@ import { LiveRiskDemoModal } from '../components/LiveRiskDemoModal';
 import { socketService } from '../services/socket';
 import { useDataMode } from '../context/DataModeContext';
 import { AlertCircle, CheckCircle, RefreshCw, Zap } from 'lucide-react';
-import axios from 'axios';
+import { authApi } from '../services/api';
 
 /** Silently log in as the demo CISO user if no auth token is stored. */
 async function ensureDemoLogin() {
   if (localStorage.getItem('token')) return;
   try {
-    const res = await axios.post('/api/v1/auth/login', {
+    const res = await authApi.login({
       email: 'ciso@demofinancial.com',
       password: 'DemoPassword2026!',
     });

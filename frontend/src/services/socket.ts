@@ -105,9 +105,16 @@ class SocketService {
     this.setStatus(this.reconnectAttempts > 0 ? 'RECONNECTING' : 'OFFLINE');
 
     const envWsUrl = (import.meta as any).env?.VITE_WS_URL;
+    const envApiUrl = (import.meta as any).env?.VITE_API_BASE_URL;
     let wsUrl: string;
+
     if (envWsUrl) {
       wsUrl = envWsUrl;
+    } else if (envApiUrl) {
+      const parsed = envApiUrl.replace(/\/+$/, '').replace(/\/api\/v1$/, '');
+      const wsProtocol = parsed.startsWith('https:') ? 'wss:' : 'ws:';
+      const cleanHost = parsed.replace(/^https?:\/\//, '');
+      wsUrl = `${wsProtocol}//${cleanHost}/api/v1/live`;
     } else {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       const host = window.location.host;
