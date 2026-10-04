@@ -9,38 +9,16 @@ import { useDataMode } from '../context/DataModeContext';
 import { AlertCircle, CheckCircle, RefreshCw, Zap } from 'lucide-react';
 import { authApi } from '../services/api';
 
-/** Silently log in as the demo CISO user if no auth token is stored. */
-async function ensureDemoLogin() {
-  if (localStorage.getItem('token')) return;
-  try {
-    const res = await authApi.login({
-      email: 'ciso@demofinancial.com',
-      password: 'DemoPassword2026!',
-    });
-    localStorage.setItem('token', res.data.access_token);
-    localStorage.setItem('user', JSON.stringify(res.data.user));
-    console.info('[RiskForge] Demo CISO session established');
-  } catch (e) {
-    console.warn('[RiskForge] Demo auto-login skipped (backend may not be ready)');
-  }
-}
-
 export const MainLayout: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [demoOpen, setDemoOpen] = useState(false);
   const [liveBanner, setLiveBanner] = useState<{ text: string; type: 'error' | 'success' | 'info' } | null>(null);
-  const [authReady, setAuthReady] = useState(() => !!localStorage.getItem('token'));
   const { refreshAll } = useDataMode();
 
-  // ── Eager demo login + WebSocket setup ──────────────────────────────────
+  // ── WebSocket setup for authenticated session ──────────────────────────
   useEffect(() => {
-    // Step 1: ensure we have a token before WS and pages fire their fetches
-    ensureDemoLogin().then(() => {
-      setAuthReady(true);
-      // Step 2: only connect WebSocket after login is confirmed
-      socketService.connect();
-    });
+    socketService.connect();
 
     const unsubSurge = socketService.subscribe('RISK_SURGE_EVENT', (data: any) => {
       setLiveBanner({
@@ -151,16 +129,7 @@ export const MainLayout: React.FC = () => {
         )}
 
         <main className="p-6 flex-1 max-w-7xl mx-auto w-full">
-          {authReady ? (
-            <Outlet />
-          ) : (
-            <div className="flex items-center justify-center h-64">
-              <div className="text-center space-y-3">
-                <div className="w-8 h-8 border-2 border-cyber-bright border-t-transparent rounded-full animate-spin mx-auto" />
-                <p className="text-xs font-mono text-cyber-subtext">Establishing secure session...</p>
-              </div>
-            </div>
-          )}
+          <Outlet />
         </main>
       </div>
 

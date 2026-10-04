@@ -1,21 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldAlert, Lock, Mail, ArrowRight, ShieldCheck, Zap, User, UserPlus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const Login: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
-  const [email, setEmail] = useState('ciso@demofinancial.com');
-  const [password, setPassword] = useState('DemoPassword2026!');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [role, setRole] = useState('analyst');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { loginWithCredentials, registerWithCredentials, signInWithGoogle, loading: googleLoading } = useAuth();
+  const { loginWithCredentials, registerWithCredentials, signInWithGoogle, loading: googleLoading, appUser, firebaseUser } = useAuth();
+
+  // Redirect to dashboard if already authenticated
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token || appUser || firebaseUser) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [appUser, firebaseUser, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email || !password) {
+      setError('Please enter your email and password.');
+      return;
+    }
     setLoading(true);
     setError('');
 
@@ -23,6 +35,11 @@ export const Login: React.FC = () => {
       if (activeTab === 'login') {
         await loginWithCredentials(email, password);
       } else {
+        if (!fullName.trim()) {
+          setError('Please enter your full name.');
+          setLoading(false);
+          return;
+        }
         await registerWithCredentials({
           email,
           password,

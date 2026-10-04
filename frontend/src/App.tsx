@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataModeProvider } from './context/DataModeContext';
 import { MainLayout } from './layouts/MainLayout';
 import { Login } from './pages/Login';
@@ -23,17 +23,86 @@ import { Models } from './pages/Models';
 import { AuditTrail } from './pages/AuditTrail';
 import { Settings } from './pages/Settings';
 
+/**
+ * Route guard that requires authentication (JWT or Firebase OAuth).
+ * Redirects unauthenticated visitors to /login.
+ */
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { appUser, firebaseUser, loading } = useAuth();
+  const token = localStorage.getItem('token');
+
+  if (loading && !token && !appUser) {
+    return (
+      <div className="min-h-screen bg-[#06110B] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!appUser && !firebaseUser && !token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+/**
+ * Route guard for public-only pages like /login.
+ * Redirects already logged-in users directly to /dashboard.
+ */
+const PublicOnlyRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { appUser, firebaseUser, loading } = useAuth();
+  const token = localStorage.getItem('token');
+
+  if (loading && token) {
+    return (
+      <div className="min-h-screen bg-[#06110B] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (appUser || firebaseUser || token) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{children}</>;
+};
+
 export const App: React.FC = () => {
   return (
     <AuthProvider>
       <DataModeProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/login" element={<Login />} />
-            
-            {/* Main Application with Sidebar & Header Layout */}
-            <Route element={<MainLayout />}>
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            {/* Public Login Entry Point */}
+            <Route
+              path="/login"
+              element={
+                <PublicOnlyRoute>
+                  <Login />
+                </PublicOnlyRoute>
+              }
+            />
+
+            {/* Root Entry Point: Redirects to dashboard if logged in, otherwise ProtectedRoute redirects to /login */}
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Navigate to="/dashboard" replace />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Protected Enterprise Application Layout */}
+            <Route
+              element={
+                <ProtectedRoute>
+                  <MainLayout />
+                </ProtectedRoute>
+              }
+            >
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/risks" element={<RiskLandscape />} />
               <Route path="/assets" element={<Assets />} />
@@ -54,7 +123,8 @@ export const App: React.FC = () => {
               <Route path="/settings" element={<Settings />} />
             </Route>
 
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            {/* Fallback unknown routes */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
         </BrowserRouter>
       </DataModeProvider>
