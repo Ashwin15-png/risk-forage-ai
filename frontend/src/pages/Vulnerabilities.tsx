@@ -6,7 +6,7 @@ import { DataModeBadge } from '../components/DataModeBadge';
 import { useDataMode } from '../context/DataModeContext';
 
 export const Vulnerabilities: React.FC = () => {
-  const { refreshAll } = useDataMode();
+  const { refreshAll, lastUpdated, dataMode } = useDataMode();
   const [vulns, setVulns] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -32,7 +32,7 @@ export const Vulnerabilities: React.FC = () => {
 
   useEffect(() => {
     fetchVulns();
-  }, [search, severityFilter, statusFilter]);
+  }, [search, severityFilter, statusFilter, lastUpdated]);
 
   const handleToggleStatus = async (id: string, currentStatus: string) => {
     setUpdatingId(id);

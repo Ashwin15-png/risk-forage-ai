@@ -9,7 +9,7 @@ import { ConfidenceBar } from '../components/ConfidenceBar';
 import { useDataMode } from '../context/DataModeContext';
 
 export const EvidenceCenter: React.FC = () => {
-  const { refreshAll } = useDataMode();
+  const { refreshAll, lastUpdated, dataMode } = useDataMode();
   const [sources, setSources] = useState<any[]>([]);
   const [records, setRecords] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,7 +47,7 @@ export const EvidenceCenter: React.FC = () => {
 
   useEffect(() => {
     fetchEvidence();
-  }, []);
+  }, [lastUpdated]);
 
   const handleRefreshSource = async (id: string) => {
     try {

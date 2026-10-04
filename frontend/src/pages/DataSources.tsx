@@ -9,12 +9,12 @@ import { DataModeBadge } from '../components/DataModeBadge';
 import { useDataMode } from '../context/DataModeContext';
 
 export const DataSources: React.FC = () => {
-  const { dataMode } = useDataMode();
+  const { dataMode, lastUpdated } = useDataMode();
   const [statusData, setStatusData] = useState<any>(null);
   const [softwareList, setSoftwareList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string>('ALL');
-  
+
   // Sync state
   const [syncingSource, setSyncingSource] = useState<string | null>(null);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
@@ -45,7 +45,7 @@ export const DataSources: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [lastUpdated]);
 
   const handleSyncNvd = async () => {
     setSyncingSource('nvd');

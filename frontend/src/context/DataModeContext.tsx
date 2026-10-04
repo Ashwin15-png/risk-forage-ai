@@ -22,7 +22,10 @@ interface DataModeContextType {
   dataMode: DataMode;
   setMode: (mode: DataMode) => void;
   simulation: SimulationState;
-  startSimulation: (scenario: { name: string; controls?: string[]; vulns?: string[]; riskScore?: number; reduction?: number; cost?: number }) => void;
+  startSimulation: (
+    scenario: { name: string; controls?: string[]; vulns?: string[]; riskScore?: number; reduction?: number; cost?: number },
+    switchToSimulationMode?: boolean
+  ) => void;
   clearSimulation: () => void;
   getBadgeLabel: () => string;
   refreshAll: () => Promise<void>;
@@ -52,14 +55,17 @@ export const DataModeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setLastUpdated(getTimestamp());
   };
 
-  const startSimulation = (scenario: {
-    name: string;
-    controls?: string[];
-    vulns?: string[];
-    riskScore?: number;
-    reduction?: number;
-    cost?: number;
-  }) => {
+  const startSimulation = (
+    scenario: {
+      name: string;
+      controls?: string[];
+      vulns?: string[];
+      riskScore?: number;
+      reduction?: number;
+      cost?: number;
+    },
+    switchToSimulationMode: boolean = false
+  ) => {
     setSimulation({
       isActive: true,
       scenarioName: scenario.name,
@@ -69,7 +75,9 @@ export const DataModeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       simulatedReduction: scenario.reduction ?? 32.0,
       estimatedCost: scenario.cost ?? 1200000.0,
     });
-    setMode('SIMULATION');
+    if (switchToSimulationMode) {
+      setMode('SIMULATION');
+    }
   };
 
   const clearSimulation = () => {
@@ -78,7 +86,8 @@ export const DataModeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       appliedControls: [],
       resolvedVulnIds: [],
     });
-    setMode('DEMO');
+    const saved = (localStorage.getItem('cybr_data_mode') as DataMode) || 'LIVE';
+    setMode(saved === 'SIMULATION' ? 'LIVE' : saved);
   };
 
   const getBadgeLabel = useCallback(() => {

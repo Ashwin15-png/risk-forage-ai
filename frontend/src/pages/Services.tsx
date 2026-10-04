@@ -6,7 +6,10 @@ import { RiskScoreBadge } from '../components/RiskScoreBadge';
 import { DataModeBadge } from '../components/DataModeBadge';
 import { ConfidenceBar } from '../components/ConfidenceBar';
 
+import { useDataMode } from '../context/DataModeContext';
+
 export const Services: React.FC = () => {
+  const { lastUpdated, dataMode } = useDataMode();
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -25,7 +28,7 @@ export const Services: React.FC = () => {
 
   useEffect(() => {
     fetchServices();
-  }, []);
+  }, [lastUpdated]);
 
   const filtered = services.filter((s) =>
     s.name.toLowerCase().includes(search.toLowerCase()) ||

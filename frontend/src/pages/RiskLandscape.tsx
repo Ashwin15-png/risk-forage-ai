@@ -12,8 +12,10 @@ import { RiskScoreBadge } from '../components/RiskScoreBadge';
 import { DataModeBadge } from '../components/DataModeBadge';
 import { ConfidenceBar } from '../components/ConfidenceBar';
 import { Link } from 'react-router-dom';
+import { useDataMode } from '../context/DataModeContext';
 
 export const RiskLandscape: React.FC = () => {
+  const { lastUpdated, dataMode } = useDataMode();
   const [bubbles, setBubbles] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
   const [selectedBubble, setSelectedBubble] = useState<any>(null);
@@ -51,7 +53,7 @@ export const RiskLandscape: React.FC = () => {
 
   useEffect(() => {
     fetchLandscape();
-  }, [criticalityFilter, exposureFilter, serviceFilter]);
+  }, [criticalityFilter, exposureFilter, serviceFilter, lastUpdated]);
 
   const getColorBySeverity = (severity: string, score: number) => {
     if (score >= 75 || severity?.toLowerCase() === 'critical') return '#EF4444';

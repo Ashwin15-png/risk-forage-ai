@@ -25,6 +25,8 @@ def preview_report(report_type: str = "executive", db: Session = Depends(get_db)
         except Exception:
             pass
 
+    currency_symbol = org.currency_symbol if org and org.currency_symbol else "₹"
+
     return {
         "report_type": report_type,
         "title": "RISKFORGE AI — Continuous Cyber Risk Intelligence Executive Report",
@@ -33,7 +35,7 @@ def preview_report(report_type: str = "executive", db: Session = Depends(get_db)
         "risk_score": snap.risk_score if snap else 72.4,
         "category": "CRITICAL" if (snap and snap.risk_score >= 75) else ("HIGH" if (snap and snap.risk_score >= 50) else "MODERATE"),
         "potential_reduction": round(float(latest_opt.risk_reduction), 1) if latest_opt else 28.0,
-        "recommended_budget": f"₹{int(latest_opt.budget_used):,}" if latest_opt else "₹48,00,000",
+        "recommended_budget": f"{currency_symbol}{int(latest_opt.budget_used):,}" if latest_opt else f"{currency_symbol}48,00,000",
         "model_version": snap.model_version if snap else "Risk Model v1.0",
         "high_risk_service": high_srv.name if high_srv else "Payment Gateway",
         "drivers": drivers,
