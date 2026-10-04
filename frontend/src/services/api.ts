@@ -72,12 +72,21 @@ api.interceptors.response.use(
 
 export const authApi = {
   login: (data: { email: string; password: string }) => api.post('/auth/login', data),
+  register: (data: { email: string; password: string; full_name: string; role?: string }) => api.post('/auth/register', data),
   me: () => api.get('/auth/me'),
   syncFirebase: (idToken: string) => api.post('/auth/sync', {}, {
     headers: { Authorization: `Bearer ${idToken}` }
   }),
   updateProfile: (data: { full_name?: string; role?: string; photo_url?: string }) =>
     api.patch('/auth/profile', data),
+  changePassword: (data: { current_password: string; new_password: string }) =>
+    api.post('/auth/change-password', data),
+  getOrganization: () => api.get('/auth/organization'),
+  updateOrganization: (data: { name?: string; industry?: string; currency?: string; currency_symbol?: string; description?: string; default_budget?: number }) =>
+    api.patch('/auth/organization', data),
+  getCalibration: () => api.get('/auth/calibration'),
+  updateCalibration: (data: { exposure_weight?: number; criticality_weight?: number; control_discount?: number }) =>
+    api.patch('/auth/calibration', data),
 };
 
 export const riskApi = {
@@ -108,6 +117,8 @@ export const vulnApi = {
 export const controlApi = {
   list: (params?: { category?: string }) => api.get('/controls', { params }),
   getDetail: (id: string) => api.get(`/controls/${id}`),
+  update: (id: string, data: { name?: string; category?: string; description?: string; effectiveness_pct?: number; coverage_pct?: number; risk_reduction_weight?: number }) =>
+    api.patch(`/controls/${id}`, data),
 };
 
 export const evidenceApi = {

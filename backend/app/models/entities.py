@@ -16,6 +16,8 @@ class Organization(BaseModel):
     currency = Column(String(10), default="INR")
     currency_symbol = Column(String(5), default="₹")
     description = Column(Text, nullable=True)
+    default_budget = Column(Float, default=5000000.0)
+    risk_weights_json = Column(Text, default="{}")
 
     users = relationship("User", back_populates="organization", cascade="all, delete-orphan")
     services = relationship("BusinessService", back_populates="organization", cascade="all, delete-orphan")

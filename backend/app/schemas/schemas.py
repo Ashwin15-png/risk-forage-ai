@@ -21,6 +21,38 @@ class UserProfileUpdate(BaseModel):
     role: Optional[str] = None
     photo_url: Optional[str] = None
 
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+class RegisterRequest(BaseModel):
+    email: str
+    password: str
+    full_name: str
+    role: Optional[str] = "analyst"
+
+class OrganizationUpdate(BaseModel):
+    name: Optional[str] = None
+    industry: Optional[str] = None
+    currency: Optional[str] = None
+    currency_symbol: Optional[str] = None
+    description: Optional[str] = None
+    default_budget: Optional[float] = None
+
+class CalibrationUpdate(BaseModel):
+    exposure_weight: Optional[float] = None
+    criticality_weight: Optional[float] = None
+    control_discount: Optional[float] = None
+
+class ControlUpdateRequest(BaseModel):
+    name: Optional[str] = None
+    category: Optional[str] = None
+    description: Optional[str] = None
+    effectiveness_pct: Optional[float] = None
+    coverage_pct: Optional[float] = None
+    risk_reduction_weight: Optional[float] = None
+    is_active: Optional[bool] = None
+
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"

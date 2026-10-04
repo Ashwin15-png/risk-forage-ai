@@ -58,7 +58,7 @@ def test_risk_drivers_calculation():
     assert "Vulnerability" in driver_types
     assert "Exposure" in driver_types
 
-def test_websocket_manager_lifecycle():
+@pytest.mark.anyio
+async def test_websocket_manager_lifecycle():
     assert ws_manager is not None
-    # Test broadcasting when no clients connected does not error
-    asyncio.run(ws_manager.broadcast("SYSTEM_STATUS", {"status": "operational", "data_mode": "LIVE"}))
+    await ws_manager.broadcast("SYSTEM_STATUS", {"status": "operational", "data_mode": "LIVE"})

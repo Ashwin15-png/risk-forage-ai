@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 from app.database import get_db
 from app.models.entities import (
-    RiskSnapshot, RiskDriver, BusinessService, Asset, Vulnerability, Incident, InvestmentInitiative, SecurityControl, OptimizationRun
+    RiskSnapshot, RiskDriver, BusinessService, Asset, Vulnerability, Incident, InvestmentInitiative, SecurityControl, OptimizationRun, Organization
 )
 
 router = APIRouter(prefix="/risks", tags=["Risk Quantification"])
@@ -129,6 +129,10 @@ def get_executive_overview(db: Session = Depends(get_db)):
         current_sec_inv = 4800000.0
         risk_reduction_opp_inr = round(expected_annual_loss * 0.35, 0)
 
+    org = db.query(Organization).first()
+    curr = getattr(org, "currency", "INR") or "INR"
+    curr_sym = getattr(org, "currency_symbol", "₹") or "₹"
+
     return {
         "kpi": {
             "total_risk": current_score,
@@ -143,7 +147,9 @@ def get_executive_overview(db: Session = Depends(get_db)):
             "expected_annual_loss": expected_annual_loss,
             "total_financial_exposure": total_exposure,
             "current_security_investment": current_sec_inv,
-            "evidence_confidence": latest_snap.confidence_score if latest_snap else 91.0
+            "evidence_confidence": latest_snap.confidence_score if latest_snap else 91.0,
+            "currency": curr,
+            "currency_symbol": curr_sym,
         },
         "distribution": dist,
         "trend": trend_data,
@@ -154,8 +160,8 @@ def get_executive_overview(db: Session = Depends(get_db)):
             "potential_risk_reduction": risk_red_pts,
             "recommended_investment": recommended_investment,
             "expected_cost": expected_cost,
-            "currency": "INR",
-            "currency_symbol": "₹"
+            "currency": curr,
+            "currency_symbol": curr_sym,
         }
     }
 

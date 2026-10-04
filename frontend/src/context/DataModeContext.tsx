@@ -91,6 +91,13 @@ export const DataModeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setLastUpdated(getTimestamp());
   };
 
+  useEffect(() => {
+    const unsub = socketService.subscribe('*', () => {
+      setLastUpdated(getTimestamp());
+    });
+    return () => unsub();
+  }, []);
+
   return (
     <DataModeContext.Provider
       value={{

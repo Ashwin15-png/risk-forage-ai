@@ -51,6 +51,9 @@ async def live_simulation_loop(ws_manager, interval_seconds: int = 20):
     Background coroutine that broadcasts simulated live risk events.
     Cycles through event types to simulate continuous risk intelligence.
     """
+    if os.getenv("TESTING", "").lower() == "true" or "pytest" in os.getenv("_", ""):
+        return
+
     demo_mode = os.getenv("DEMO_MODE", "true").lower() == "true"
     if not demo_mode:
         logger.info("DEMO_MODE=false — live simulation engine disabled")

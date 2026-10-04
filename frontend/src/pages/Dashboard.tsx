@@ -41,6 +41,28 @@ export const Dashboard: React.FC = () => {
   }
 
   const { kpi, distribution, trend = [], top_drivers = [], highest_risk_services = [], investment_opportunity } = data;
+  const currencySymbol = kpi?.currency_symbol || investment_opportunity?.currency_symbol || '₹';
+
+  const formatFinancialValue = (amount: number, symbol: string = currencySymbol) => {
+    if (amount === undefined || amount === null || isNaN(amount)) return `${symbol}0`;
+    if (symbol === '₹') {
+      if (amount >= 10000000) {
+        return `${symbol}${(amount / 10000000).toFixed(2)} Cr`;
+      }
+      if (amount >= 100000) {
+        return `${symbol}${(amount / 100000).toFixed(1)} L`;
+      }
+      return `${symbol}${amount.toLocaleString('en-IN')}`;
+    } else {
+      if (amount >= 1000000) {
+        return `${symbol}${(amount / 1000000).toFixed(2)} M`;
+      }
+      if (amount >= 1000) {
+        return `${symbol}${(amount / 1000).toFixed(1)} K`;
+      }
+      return `${symbol}${amount.toLocaleString()}`;
+    }
+  };
 
   // Filter trend data according to selected timeframe
   const filteredTrend = trend.slice(timeRange === '7D' ? -7 : timeRange === '90D' ? -90 : -30);
@@ -56,26 +78,26 @@ export const Dashboard: React.FC = () => {
             </h1>
             <DataModeBadge />
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-xs text-cyber-subtext mt-1">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-cyber-subtext mt-1 font-mono">
             <span>Continuous Cyber Risk Intelligence &amp; Investment Optimization</span>
             <span className="text-cyber-border">•</span>
-            <span className="font-mono text-cyber-bright">Model: Risk Model v1.0</span>
+            <span className="text-cyber-bright">Model: Risk Model v1.0</span>
             <span className="text-cyber-border">•</span>
-            <span className="font-mono">Last Recalculation: {lastUpdated}</span>
+            <span>Last Recalculation: {lastUpdated}</span>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           <button
             onClick={refetch}
-            className="px-3 py-1.5 rounded-lg bg-cyber-panel border border-cyber-border text-cyber-subtext hover:text-cyber-bright hover:border-cyber-borderHover text-xs flex items-center gap-1.5 transition-all shadow-sm"
+            className="px-3 py-1.5 rounded-lg bg-cyber-panel border border-cyber-border text-cyber-subtext hover:text-cyber-bright hover:border-cyber-borderHover text-xs flex items-center gap-1.5 transition-all shadow-sm font-mono cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             Refresh Telemetry
           </button>
           <Link
             to="/optimization"
-            className="px-3.5 py-1.5 rounded-lg bg-cyber-bright hover:bg-cyber-primary text-[#06110B] font-bold text-xs flex items-center gap-1.5 transition-all shadow-[0_0_15px_rgba(74,222,128,0.3)]"
+            className="px-3.5 py-1.5 rounded-lg bg-cyber-bright hover:bg-cyber-primary text-[#06110B] font-bold text-xs flex items-center gap-1.5 transition-all shadow-[0_0_15px_rgba(74,222,128,0.3)] font-mono"
           >
             <Zap className="w-3.5 h-3.5" />
             Optimize Portfolio
@@ -105,7 +127,7 @@ export const Dashboard: React.FC = () => {
               <TrendingUp className="w-3.5 h-3.5" />
               <span>+{Math.abs(kpi.delta_pct || 8.3)}%</span>
             </div>
-            <span className="text-[10px] text-cyber-subtext font-mono">vs 30-day baseline</span>
+            <span className="text-[10px] text-cyber-subtext font-mono">vs baseline</span>
           </div>
         </div>
 
@@ -117,12 +139,14 @@ export const Dashboard: React.FC = () => {
           </div>
           <div className="flex items-baseline gap-2 mb-2">
             <span className="text-3xl font-extrabold text-cyber-bright tracking-tight font-mono">
-              ₹1.20 Cr
+              {formatFinancialValue(kpi.expected_annual_loss, currencySymbol)}
             </span>
           </div>
           <div className="flex items-center justify-between text-xs pt-1 border-t border-cyber-border/40">
             <span className="text-cyber-subtext text-[11px]">Modeled Loss Frequency</span>
-            <span className="text-amber-400 font-mono text-xs font-semibold">1.48 events / yr</span>
+            <span className="text-amber-400 font-mono text-xs font-semibold">
+              {(kpi.total_risk / 48.0).toFixed(2)} events / yr
+            </span>
           </div>
         </div>
 
@@ -134,12 +158,14 @@ export const Dashboard: React.FC = () => {
           </div>
           <div className="flex items-baseline gap-2 mb-2">
             <span className="text-3xl font-extrabold text-cyber-text tracking-tight font-mono">
-              ₹4.70 Cr
+              {formatFinancialValue(kpi.total_financial_exposure, currencySymbol)}
             </span>
           </div>
           <div className="flex items-center justify-between text-xs pt-1 border-t border-cyber-border/40">
-            <span className="text-cyber-subtext text-[11px]">Across Tier 1/2 Services</span>
-            <span className="text-cyber-bright font-mono text-xs">12 Active Services</span>
+            <span className="text-cyber-subtext text-[11px]">Monitored Scope</span>
+            <span className="text-cyber-bright font-mono text-xs">
+              {highest_risk_services.length || 12} Active Services
+            </span>
           </div>
         </div>
 
@@ -151,18 +177,18 @@ export const Dashboard: React.FC = () => {
           </div>
           <div className="flex items-baseline gap-3 mb-2">
             <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-extrabold text-cyber-text font-mono">{kpi.critical_assets || 17}</span>
+              <span className="text-3xl font-extrabold text-cyber-text font-mono">{kpi.critical_assets || 0}</span>
               <span className="text-[10px] text-cyber-subtext uppercase font-mono">Assets</span>
             </div>
             <span className="text-cyber-border font-mono">/</span>
             <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold text-rose-400 font-mono">{kpi.critical_vulnerabilities || 34}</span>
+              <span className="text-2xl font-bold text-rose-400 font-mono">{kpi.critical_vulnerabilities || 0}</span>
               <span className="text-[10px] text-cyber-subtext uppercase font-mono">CVEs</span>
             </div>
           </div>
           <div className="flex items-center justify-between text-xs pt-1 border-t border-cyber-border/40">
             <span className="text-cyber-subtext text-[11px]">Active Incidents</span>
-            <span className="text-amber-300 font-mono font-bold">{kpi.open_incidents || 4} Open</span>
+            <span className="text-amber-300 font-mono font-bold">{kpi.open_incidents || 0} Open</span>
           </div>
         </div>
       </div>
@@ -174,10 +200,16 @@ export const Dashboard: React.FC = () => {
           <div>
             <div className="text-[11px] uppercase font-mono text-cyber-subtext">Risk Reduction Opportunity</div>
             <div className="flex items-baseline gap-2 mt-1">
-              <span className="text-2xl font-extrabold text-cyber-bright font-mono">₹72 L</span>
-              <span className="text-xs text-cyber-muted font-mono">(-28.0 risk pts)</span>
+              <span className="text-2xl font-extrabold text-cyber-bright font-mono">
+                {formatFinancialValue(kpi.risk_reduction_opportunity_inr || (kpi.expected_annual_loss * 0.35), currencySymbol)}
+              </span>
+              <span className="text-xs text-cyber-muted font-mono">
+                (-{(kpi.risk_reduction_opportunity || 28.0).toFixed(1)} risk pts)
+              </span>
             </div>
-            <div className="text-[10px] text-cyber-subtext mt-0.5">Under ₹50L optimal capital allocation</div>
+            <div className="text-[10px] text-cyber-subtext mt-0.5 font-mono">
+              Under {formatFinancialValue(investment_opportunity?.current_budget || 5000000, currencySymbol)} optimal allocation
+            </div>
           </div>
           <div className="p-3 rounded-xl bg-cyber-panel border border-cyber-border text-cyber-bright">
             <TrendingDown className="w-5 h-5" />
@@ -189,10 +221,14 @@ export const Dashboard: React.FC = () => {
           <div>
             <div className="text-[11px] uppercase font-mono text-cyber-subtext">Evidence Confidence Index</div>
             <div className="flex items-baseline gap-2 mt-1">
-              <span className="text-2xl font-extrabold text-emerald-400 font-mono">91%</span>
-              <span className="text-xs text-emerald-400/80 font-mono">High Fidelity</span>
+              <span className="text-2xl font-extrabold text-emerald-400 font-mono">
+                {Math.round(kpi.evidence_confidence || 91)}%
+              </span>
+              <span className="text-xs text-emerald-400/80 font-mono">
+                {(kpi.evidence_confidence || 91) >= 85 ? 'High Fidelity' : 'Medium Fidelity'}
+              </span>
             </div>
-            <div className="text-[10px] text-cyber-subtext mt-0.5">8 telemetry feeds normalized</div>
+            <div className="text-[10px] text-cyber-subtext mt-0.5 font-mono">Normalized telemetry feeds active</div>
           </div>
           <div className="p-3 rounded-xl bg-cyber-panel border border-cyber-border text-emerald-400">
             <ShieldCheck className="w-5 h-5" />
@@ -207,7 +243,7 @@ export const Dashboard: React.FC = () => {
               <span className="text-xl font-bold text-cyber-text font-mono">OR-Tools MIP</span>
               <span className="text-xs text-cyber-bright font-mono">Optimal</span>
             </div>
-            <div className="text-[10px] text-cyber-subtext mt-0.5">Mixed-Integer Knapsack Optimization</div>
+            <div className="text-[10px] text-cyber-subtext mt-0.5 font-mono">Mixed-Integer Knapsack Optimization</div>
           </div>
           <div className="p-3 rounded-xl bg-cyber-panel border border-cyber-border text-cyber-bright">
             <Cpu className="w-5 h-5" />
@@ -276,7 +312,7 @@ export const Dashboard: React.FC = () => {
                           <div className="text-cyber-text">Enterprise Risk: <strong className="text-cyber-bright">{p.risk_score}</strong></div>
                           <div className="text-rose-400">Exposure Mod: {p.exposure}</div>
                           <div className="text-emerald-400">Residual Risk: {p.residual_risk}</div>
-                          <div className="text-amber-300">EAL: ₹{(p.eal ? p.eal / 100000 : 12).toFixed(1)} Lakh</div>
+                          <div className="text-amber-300">EAL: {formatFinancialValue(p.eal, currencySymbol)}</div>
                           <div className="text-cyber-subtext text-[10px]">Confidence: {p.confidence}%</div>
                         </div>
                       );
@@ -373,7 +409,7 @@ export const Dashboard: React.FC = () => {
             to="/services"
             className="text-xs font-mono text-cyber-bright hover:underline flex items-center gap-1"
           >
-            <span>View All 12 Services</span>
+            <span>View All {highest_risk_services.length} Services</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -418,7 +454,7 @@ export const Dashboard: React.FC = () => {
                     <RiskScoreBadge score={srv.risk_score} size="sm" showCategory={false} />
                   </td>
                   <td className="py-3 px-4 font-mono font-bold text-cyber-bright">
-                    ₹{(srv.eal ? srv.eal / 100000 : 78).toFixed(1)} L
+                    {formatFinancialValue(srv.eal, currencySymbol)}
                   </td>
                   <td className="py-3 px-4">
                     {srv.trend === 'up' ? (
